@@ -12,6 +12,8 @@ from odoo.addons.component.core import WorkContext, _get_addon_name
 
 from ..core import _rest_controllers_per_module
 
+from ..http import JSONEncoder
+
 _logger = logging.getLogger(__name__)
 
 
@@ -92,7 +94,14 @@ class RestController(Controller, metaclass=RestControllerType):
             # The response has been build by the called method...
             return data
         # By default return result as json
-        return request.make_json_response(data)
+        return self.make_json_response(data)
+
+    def make_json_response(self, data, headers=None, cookies=None):
+        data = JSONEncoder().encode(data)
+        if headers is None:
+            headers = {}
+        headers["Content-Type"] = "application/json"
+        return request.make_response(data, headers=headers, cookies=cookies)
 
     @property
     def collection_name(self):
